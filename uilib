@@ -101,10 +101,10 @@ function ui.notify(opts)
 		BackgroundTransparency = 1,
 		Position = UDim2.new(1, -45, 0, 5),
 		Size = UDim2.new(0, 40, 0, 14),
-		Font = Enum.Font.GothamBold,
+		Font = Enum.Font.Code,
 		Text = string.format("%.1fs", duration),
 		TextColor3 = Color3.fromRGB(120, 120, 120),
-		TextSize = 10,
+		TextSize = 11,
 		TextXAlignment = Enum.TextXAlignment.Right,
 		ZIndex = 5,
 		Parent = card,
@@ -117,7 +117,7 @@ function ui.notify(opts)
 		Font = Enum.Font.GothamBold,
 		Text = title,
 		TextColor3 = Color3.fromRGB(255, 255, 255),
-		TextSize = 12,
+		TextSize = 13,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		ZIndex = 5,
 		Parent = card,
@@ -137,10 +137,10 @@ function ui.notify(opts)
 		BackgroundTransparency = 1,
 		Position = UDim2.new(0, 20, 0, 26),
 		Size = UDim2.new(1, -32, 0, 28),
-		Font = Enum.Font.Gotham,
+		Font = Enum.Font.Code,
 		Text = text,
 		TextColor3 = Color3.fromRGB(160, 160, 160),
-		TextSize = 11,
+		TextSize = 12,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextYAlignment = Enum.TextYAlignment.Top,
 		TextWrapped = true,
@@ -212,11 +212,11 @@ function ui.new(opts)
 	self.stroke = new_inst("UIStroke", { Color = Color3.fromRGB(45, 45, 45), Thickness = 1, Parent = self.main_frame })
 
 	local top_highlight = new_inst("Frame", {
-		BackgroundColor3 = Color3.fromRGB(50, 50, 50),
+		BackgroundColor3 = Color3.fromRGB(220, 220, 220),
 		BorderSizePixel = 0,
 		Position = UDim2.new(0, 8, 0, 0),
 		Size = UDim2.new(1, -16, 0, 1),
-		ZIndex = 2,
+		ZIndex = 10,
 		Parent = self.main_frame,
 	})
 
@@ -242,12 +242,12 @@ function ui.new(opts)
 	local title_label = new_inst("TextLabel", {
 		BackgroundTransparency = 1,
 		Position = UDim2.new(0, 12, 0, 0),
-		Size = UDim2.new(0.4, 0, 1, 0),
+		Size = UDim2.new(0.8, 0, 1, 0),
 		Font = Enum.Font.GothamBold,
 		Text = self.title .. "  <font color='rgb(100,100,100)'>" .. self.version .. "</font>",
 		RichText = true,
 		TextColor3 = Color3.fromRGB(255, 255, 255),
-		TextSize = 12,
+		TextSize = 14,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		ZIndex = 4,
 		Parent = header,
@@ -255,8 +255,8 @@ function ui.new(opts)
 
 	local btn_container = new_inst("Frame", {
 		BackgroundTransparency = 1,
-		Position = UDim2.new(1, -60, 0, 0),
-		Size = UDim2.new(0, 60, 1, 0),
+		Position = UDim2.new(1, -36, 0, 0),
+		Size = UDim2.new(0, 36, 1, 0),
 		ZIndex = 5,
 		Parent = header,
 	})
@@ -264,31 +264,13 @@ function ui.new(opts)
 	local min_btn = new_inst("TextButton", {
 		BackgroundTransparency = 1,
 		Position = UDim2.new(0, 0, 0, 0),
-		Size = UDim2.new(0.5, 0, 1, 0),
+		Size = UDim2.new(1, 0, 1, 0),
 		Font = Enum.Font.GothamBold,
-		Text = "-",
-		TextColor3 = Color3.fromRGB(255, 255, 255),
-		TextSize = 14,
-		Parent = btn_container,
-	})
-
-	local close_btn = new_inst("TextButton", {
-		BackgroundTransparency = 1,
-		Position = UDim2.new(0.5, 0, 0, 0),
-		Size = UDim2.new(0.5, 0, 1, 0),
-		Font = Enum.Font.GothamBold,
-		Text = "×",
-		TextColor3 = Color3.fromRGB(255, 255, 255),
+		Text = "−",
+		TextColor3 = Color3.fromRGB(200, 200, 200),
 		TextSize = 16,
 		Parent = btn_container,
 	})
-
-	-- Проверка на мобильное устройство (скрываем крестик)
-	local is_mobile = user_input_service.TouchEnabled and not user_input_service.MouseEnabled
-	if is_mobile then
-		close_btn.Visible = false
-		min_btn.Size = UDim2.new(1, 0, 1, 0) -- Растягиваем сворачивание на всю панель кнопок
-	end
 
 	local tab_bar = new_inst("Frame", {
 		Name = "tab_bar",
@@ -360,9 +342,22 @@ function ui.new(opts)
 	local function perform_minimize()
 		self.is_minimized = not self.is_minimized
 		if self.is_minimized then
+			local anchor_y = self.main_frame.AnchorPoint.Y
+			local current_pos = self.main_frame.Position
+			local current_size = self.main_frame.AbsoluteSize
+			local bottom_y_offset = current_pos.Y.Offset + (1 - anchor_y) * current_size.Y
+			self.main_frame.AnchorPoint = Vector2.new(0.5, 1)
+			self.main_frame.Position = UDim2.new(current_pos.X.Scale, current_pos.X.Offset, 0, bottom_y_offset)
 			tween(self.main_frame, { Size = UDim2.new(0, self.size.X.Offset, 0, 32) }, 0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 		else
 			tween(self.main_frame, { Size = self.size }, 0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+			task.delay(0.35, function()
+				local current_pos = self.main_frame.Position
+				local current_size = self.main_frame.AbsoluteSize
+				local top_y_offset = current_pos.Y.Offset - current_size.Y
+				self.main_frame.AnchorPoint = Vector2.new(0.5, 0.5)
+				self.main_frame.Position = UDim2.new(current_pos.X.Scale, current_pos.X.Offset, 0, top_y_offset + current_size.Y / 2)
+			end)
 		end
 	end
 
@@ -375,7 +370,6 @@ function ui.new(opts)
 			delay_time = 0.35
 		end
 		task.delay(delay_time, function()
-			-- Прячем UI за экран
 			tween(self.main_frame, { Position = UDim2.new(0.5, 0, 1.5, 0) }, 0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In)
 			task.delay(0.4, function()
 				self.main_frame.Visible = false
@@ -387,7 +381,7 @@ function ui.new(opts)
 		if not self.is_closed then return end
 		self.is_closed = false
 		self.main_frame.Visible = true
-		-- Возвращаем на центр экрана
+		self.main_frame.AnchorPoint = Vector2.new(0.5, 0.5)
 		tween(self.main_frame, { Position = UDim2.new(0.5, 0, 0.5, 0) }, 0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 		task.delay(0.4, function()
 			self.is_minimized = false
@@ -396,11 +390,9 @@ function ui.new(opts)
 	end
 
 	min_btn.MouseButton1Click:Connect(perform_minimize)
-	close_btn.MouseButton1Click:Connect(perform_close)
 
 	user_input_service.InputBegan:Connect(function(inp, proc)
 		if proc then return end
-		-- Восстановление/скрытие строго по Right Shift
 		if inp.KeyCode == Enum.KeyCode.RightShift then
 			if self.is_closed then
 				perform_open()
@@ -443,7 +435,7 @@ function window_mt:tab(opts)
 		Font = Enum.Font.GothamSemibold,
 		Text = name,
 		TextColor3 = Color3.fromRGB(110, 110, 110),
-		TextSize = 11,
+		TextSize = 12,
 		ZIndex = 5,
 		Parent = tab_btn,
 	})
@@ -544,10 +536,10 @@ function window_mt:tab(opts)
 		local btn = new_inst("TextButton", {
 			BackgroundTransparency = 1,
 			Size = UDim2.new(1, 0, 1, 0),
-			Font = Enum.Font.GothamSemibold,
+			Font = Enum.Font.Code,
 			Text = bname,
 			TextColor3 = Color3.fromRGB(220, 220, 220),
-			TextSize = 11,
+			TextSize = 12,
 			ZIndex = 5,
 			Parent = row,
 		})
@@ -596,10 +588,10 @@ function window_mt:tab(opts)
 			BackgroundTransparency = 1,
 			Position = UDim2.new(0, 10, 0, 0),
 			Size = UDim2.new(1, -55, 1, 0),
-			Font = Enum.Font.Gotham,
+			Font = Enum.Font.Code,
 			Text = tname,
 			TextColor3 = Color3.fromRGB(200, 200, 200),
-			TextSize = 11,
+			TextSize = 12,
 			TextXAlignment = Enum.TextXAlignment.Left,
 			ZIndex = 5,
 			Parent = row,
@@ -689,10 +681,10 @@ function window_mt:tab(opts)
 			BackgroundTransparency = 1,
 			Position = UDim2.new(0, 10, 0, 4),
 			Size = UDim2.new(0.6, 0, 0, 16),
-			Font = Enum.Font.Gotham,
+			Font = Enum.Font.Code,
 			Text = sname,
 			TextColor3 = Color3.fromRGB(200, 200, 200),
-			TextSize = 11,
+			TextSize = 12,
 			TextXAlignment = Enum.TextXAlignment.Left,
 			ZIndex = 5,
 			Parent = row,
@@ -702,10 +694,10 @@ function window_mt:tab(opts)
 			BackgroundTransparency = 1,
 			Position = UDim2.new(1, -50, 0, 4),
 			Size = UDim2.new(0, 40, 0, 16),
-			Font = Enum.Font.GothamBold,
+			Font = Enum.Font.Code,
 			Text = tostring(value) .. suffix,
 			TextColor3 = accent_color,
-			TextSize = 11,
+			TextSize = 12,
 			TextXAlignment = Enum.TextXAlignment.Right,
 			ZIndex = 5,
 			Parent = row,
